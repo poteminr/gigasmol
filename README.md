@@ -32,18 +32,17 @@ GigaChat API + smolagents = gigasmol 💀
 - **Zero Bloat**: Only essential dependencies
 - **Easy to Understand**: Read and comprehend the entire codebase in minutes
 - **Maintainable**: Small, focused codebase means fewer bugs and easier updates
-
 ## Installation
-### Full Installation (recommended)
+### API-Only Installation (Default)
 ```bash
 pip install gigasmol
 ```
 
-### API-Only Installation
-If you only need direct access to the GigaChat API without the smolagents integration:
+### Full Installation with Agent Support
 ```bash
-pip install "gigasmol[api]"
+pip install "gigasmol[agent]"
 ```
+
 
 ## Quick Start
 ### Basic Usage with smolagents

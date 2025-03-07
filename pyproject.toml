@@ -11,9 +11,9 @@ authors = [
 description = "A lightweight wrapper for gigachat api model for seamless use with hf smolagents"
 readme = "README.md"
 requires-python = ">=3.10"
+license = "Apache-2.0"
+# Base dependencies - ONLY the API parts
 dependencies = [
-    "smolagents>=1.10.0",
-    "huggingface-hub>=0.19.0",
     "requests>=2.31.0",
     "sseclient>=0.0.27",
     "urllib3>=2.0.0",
@@ -28,8 +28,8 @@ dependencies = [
 package-dir = {"" = "src"}
 
 [project.optional-dependencies]
-api = [
-    "requests>=2.31.0",
-    "sseclient>=0.0.27",
-    "urllib3>=2.0.0",
+# Agent functionality adds smolagents
+agent = [
+    "smolagents>=1.10.0",
+    "huggingface-hub>=0.19.0",
 ]
