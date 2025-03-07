@@ -62,21 +62,18 @@ agent.run("What are the main tourist attractions in Moscow?")
 import json
 from gigasmol import GigaChat
 
-# Load credentials from file
-credentials = json.load(open('credentials.json'))
-
 # Direct access to GigaChat API
 gigachat = GigaChat(
     model_name="GigaChat-Max",
-    client_id=credentials['client_id'],
-    client_secret=credentials['client_secret'],
+    client_id="YOUR_CLIENT_ID",
+    client_secret="YOUR_CLIENT_SECRET",
 )
 
 # Generate a response
 response = gigachat.chat([
     {"role": "user", "content": "What is the capital of Russia?"}
 ])
-print(response.choices[0].message.content)
+print(response['answer']) # or print(response['response']['choices'][0]['message']['content'])
 ```
 
 ## 🔍 How It Works
