@@ -9,7 +9,7 @@
 </div>
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/poteminr/gigasmol/main/assets/logo.png" alt="GigaSmol Logo" width="200"/>
+  <img src="./assets/logo.png" alt="GigaSmol Logo" width="200"/>
   <p><i>Lightweight GigaChat API wrapper for smolagents</i></p>
 </div>
 
