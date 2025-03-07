@@ -52,6 +52,9 @@ agent = CodeAgent(
 # Run the agent
 agent.run("What are the main tourist attractions in Moscow?")
 ```
+```python
+>>> "The main tourist attractions in Moscow are: Red Square, St. Basil's Cathedral, Kremlin, Bolshoi Theatre, Gorky Park, Tretyakov Gallery, Novodevichy Convent, and Moscow Metro."
+```
 
 ### Using Raw GigaChat API
 

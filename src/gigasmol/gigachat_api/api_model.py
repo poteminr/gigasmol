@@ -24,7 +24,7 @@ class GigaChat:
     def __init__(
         self,
         model_name: str = 'GigaChat',
-        api_endpoint: str = "https://gigachat.devices.sberbank.ru/api/v1",
+        api_endpoint: str = "https://gigachat.devices.sberbank.ru/api/v1/",
         authorize: Optional[APIAuthorize] = None,
         temperature: float = 0.1,
         top_p: float = 0.1,

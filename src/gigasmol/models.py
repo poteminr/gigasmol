@@ -38,7 +38,7 @@ class GigaChatSmolModel(Model):
     def __init__(
         self,
         model_name: str = "GigaChat",
-        api_endpoint: str = "https://gigachat.devices.sberbank.ru/api/v1",
+        api_endpoint: str = "https://gigachat.devices.sberbank.ru/api/v1/",
         temperature: float = 0.1,
         top_p: float = 0.1,
         repetition_penalty: float = 1.0,
