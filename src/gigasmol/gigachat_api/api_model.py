@@ -149,14 +149,13 @@ class GigaChat:
             "stream": bool(stream),
             "max_tokens": int(max_tokens),
         }
-        
         if functions is not None:
             params["functions"] = functions
             if function_call is not None:
                 params["function_call"] = function_call
             else:
                 params["function_call"] = "auto"
-  
+
         if stream:
             params["update_interval"] = 0
         query = json.dumps(params)

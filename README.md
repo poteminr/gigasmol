@@ -91,7 +91,7 @@ response = gigachat.chat([
 print(response['answer']) # or print(response['response']['choices'][0]['message']['content'])
 ```
 
-## 🔍 How It Works
+## How It Works
 
 GigaSmol provides two layers of functionality:
 
