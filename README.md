@@ -9,8 +9,8 @@
 </div>
 
 <div align="center">
-  <img src="./assets/logo.png" alt="GigaSmol Logo" width="200"/>
-  <p><i>Lightweight GigaChat API wrapper for smolagents</i></p>
+  <img src="./assets/logo.png" alt="GigaSmol Logo" width="400"/>
+  <p><i>lightweight gigachat api wrapper for smolagents</i></p>
 </div>
 
 ## Overview
