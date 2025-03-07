@@ -25,7 +25,7 @@ No complex abstractions — just clean, straightforward access to GigaChat's cap
 GigaChat API + smolagents = gigasmol 💀
 ```
 
-## why gigasmol 💀?
+## Why gigasmol 💀?
 
 - **Tiny Footprint**: Less than 1K lines of code total
 - **Simple Structure**: Just 4 core files
