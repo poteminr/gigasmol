@@ -1,4 +1,3 @@
-
 <div align="center">
   
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -15,7 +14,7 @@
 
 ## Overview
 
-GigaSmol serves two primary purposes:
+gigasmol serves two primary purposes:
 
 1. Provides **direct, lightweight access** to GigaChat models through GigaChat API without unnecessary abstractions
 2. Creates a **smolagents-compatible wrapper** that lets you use GigaChat within agent systems
@@ -25,6 +24,14 @@ No complex abstractions — just clean, straightforward access to GigaChat's cap
 ```
 GigaChat API + smolagents = gigasmol 💀
 ```
+
+## why gigasmol 💀?
+
+- **Tiny Footprint**: Less than 1K lines of code total
+- **Simple Structure**: Just 4 core files
+- **Zero Bloat**: Only essential dependencies
+- **Easy to Understand**: Read and comprehend the entire codebase in minutes
+- **Maintainable**: Small, focused codebase means fewer bugs and easier updates
 
 ## Quick Start
 ```bash

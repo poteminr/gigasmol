@@ -11,6 +11,13 @@ authors = [
 description = "A lightweight wrapper for gigachat api model for seamless use with hf smolagents"
 readme = "README.md"
 requires-python = ">=3.10"
+dependencies = [
+    "smolagents>=1.10.0",
+    "huggingface-hub>=0.19.0",
+    "requests>=2.31.0",
+    "sseclient>=0.0.27",
+    "urllib3>=2.0.0",
+]
 
 
 [project.urls]
@@ -19,3 +26,11 @@ requires-python = ">=3.10"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "ruff>=0.0.1",
+    "mypy>=1.0.0",
+    "black>=23.0.0",
+]
