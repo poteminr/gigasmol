@@ -4,14 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gigasmol"
-version = "0.0.1"
+version = "0.0.2"
 authors = [
     {name = "poteminr", email = "poteminr@gmail.com"},
 ]
 description = "A lightweight wrapper for gigachat api model for seamless use with hf smolagents"
 readme = "README.md"
 requires-python = ">=3.10"
-license = "Apache-2.0"
+license = {text = "LICENSE"}
 # Base dependencies - ONLY the API parts
 dependencies = [
     "requests>=2.31.0",
