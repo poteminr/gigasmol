@@ -1,15 +1,15 @@
 <div align="center">
   
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+<!-- [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![HuggingFace](https://img.shields.io/badge/🤗-smolagents-orange.svg)](https://github.com/huggingface/smolagents)
-[![GigaChat](https://img.shields.io/badge/GigaChat-API-green.svg)](https://gigachat.ru/)
+[![GigaChat](https://img.shields.io/badge/GigaChat-API-green.svg)](https://gigachat.ru/) -->
 
 </div>
 
 <div align="center">
-  <img src="./assets/logo.png" alt="GigaSmol Logo" width="400"/>
-  <p><i>lightweight gigachat api wrapper for smolagents</i></p>
+  <img src="./assets/logo.png" alt="GigaSmol Logo" width="500"/>
+  <p><i>lightweight gigachat api wrapper for <a href="https://github.com/huggingface/smolagents">smolagents</a></i></p>
 </div>
 
 ## Overview
@@ -33,10 +33,19 @@ GigaChat API + smolagents = gigasmol 💀
 - **Easy to Understand**: Read and comprehend the entire codebase in minutes
 - **Maintainable**: Small, focused codebase means fewer bugs and easier updates
 
-## Quick Start
+## Installation
+### Full Installation (recommended)
 ```bash
 pip install gigasmol
 ```
+
+### API-Only Installation
+If you only need direct access to the GigaChat API without the smolagents integration:
+```bash
+pip install "gigasmol[api]"
+```
+
+## Quick Start
 ### Basic Usage with smolagents
 
 ```python

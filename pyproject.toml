@@ -28,9 +28,8 @@ dependencies = [
 package-dir = {"" = "src"}
 
 [project.optional-dependencies]
-dev = [
-    "pytest>=7.0.0",
-    "ruff>=0.0.1",
-    "mypy>=1.0.0",
-    "black>=23.0.0",
+api = [
+    "requests>=2.31.0",
+    "sseclient>=0.0.27",
+    "urllib3>=2.0.0",
 ]
