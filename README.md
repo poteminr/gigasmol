@@ -127,7 +127,7 @@ GigaSmol provides two layers of functionality:
 
 Check the `examples` directory:
 - `structured_output.ipynb`: Using GigaChat for structured output
-- `code_agents.ipynb`: Building code agents with GigaChat and smolagents
+- `agents.ipynb`: Building code and tool agents with GigaChat and smolagents
 
 ## Acknowledgements
 
