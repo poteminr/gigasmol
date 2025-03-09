@@ -49,7 +49,7 @@ pip install "gigasmol[agent]"
 
 ```python
 from gigasmol import GigaChatSmolModel
-from smolagents import CodeAgent, DuckDuckGoSearchTool
+from smolagents import CodeAgent, ToolCallingAgent, DuckDuckGoSearchTool
 
 # Initialize the GigaChat model with your credentials
 model = GigaChatSmolModel(
@@ -58,18 +58,25 @@ model = GigaChatSmolModel(
     client_secret="YOUR_CLIENT_SECRET",
 )
 
-# Create an agent with the model
-agent = CodeAgent(
+# Create an CodeAgent with the model
+code_agent = CodeAgent(
     tools=[DuckDuckGoSearchTool()],
     model=model
 )
 
-# Run the agent
-agent.run("What are the main tourist attractions in Moscow?")
+# Run the code_agent
+code_agent.run("What are the main tourist attractions in Moscow?")
+
+# Create an CodeAgent with the model
+tool_calling_agent = ToolCallingAgent(
+    tools=[DuckDuckGoSearchTool()],
+    model=model
+)
+
+# Run the tool_calling_agent
+tool_calling_agent.run("What are the main tourist attractions in Moscow?")
 ```
-```python
->>> "The main tourist attractions in Moscow are: Red Square, St. Basil's Cathedral, Kremlin, Bolshoi Theatre, Gorky Park, Tretyakov Gallery, Novodevichy Convent, and Moscow Metro."
-```
+
 
 ### Using Raw GigaChat API
 
@@ -91,7 +98,7 @@ response = gigachat.chat([
 print(response['answer']) # or print(response['response']['choices'][0]['message']['content'])
 ```
 
-## 🔍 How It Works
+## How It Works
 
 GigaSmol provides two layers of functionality:
 
