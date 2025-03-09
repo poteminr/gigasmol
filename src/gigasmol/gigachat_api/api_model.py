@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import StrEnum
-from typing import Any, Iterator, Optional, Union
+from typing import Any, Iterator, Optional, Union, Literal
 
 import json
 import logging
@@ -37,7 +37,7 @@ class GigaChat:
         client_id: Optional[str] = None,
         client_secret: Optional[str] = None,
         auth_endpoint: Optional[str] = "https://ngw.devices.sberbank.ru:9443/api/v2/oauth",
-        auth_scope: Optional[str] = "GIGACHAT_API_CORP",
+        auth_scope: Literal["GIGACHAT_API_PERS", "GIGACHAT_API_CORP", "GIGACHAT_API_B2B"] = "GIGACHAT_API_CORP",
         cert_path: Optional[str] = '',
     ) -> None:
         """Initialize with GigaChat API access parameters and response generation settings.

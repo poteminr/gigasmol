@@ -2,7 +2,7 @@ import uuid
 import json
 import logging
 from copy import deepcopy
-from typing import List, Dict, Optional, Any, Tuple, Union
+from typing import List, Dict, Optional, Any, Tuple, Union, Literal
 
 from smolagents.tools import Tool
 from smolagents.models import Model, MessageRole, parse_tool_args_if_needed, remove_stop_sequences
@@ -107,6 +107,30 @@ def extract_tool_calls(response: Dict[str, Any]) -> Optional[ChatCompletionOutpu
     return ChatCompletionOutputToolCall.parse_obj(tool_calls) if tool_calls else None
 
 
+def create_final_answer_tool_call(answer: str) -> ChatCompletionOutputToolCall:
+    """Create a FinalAnswerTool call with the given answer.
+    
+    This helper method creates a properly formatted tool call for the FinalAnswerTool
+    using the provided answer as the argument.
+    
+    Args:
+        answer: The text answer to include in the tool call.
+        
+    Returns:
+        ChatCompletionOutputToolCall: A formatted tool call for FinalAnswerTool.
+    """
+    call_id = f"call_{str(uuid.uuid4())[:8]}"
+    final_answer_call = [{
+        "id": call_id,
+        "type": "function",
+        "function": {
+            "name": "final_answer",
+            "arguments": json.dumps({"answer": answer})
+        }
+    }]
+    return ChatCompletionOutputToolCall.parse_obj(final_answer_call)
+
+
 class GigaChatSmolModel(Model):
     """A wrapper for the GigaChat model that implements the smolagents Model interface.
     
@@ -136,7 +160,7 @@ class GigaChatSmolModel(Model):
         client_id: Optional[str] = None,
         client_secret: Optional[str] = None,
         auth_endpoint: str = "https://ngw.devices.sberbank.ru:9443/api/v2/oauth",
-        auth_scope: str = "GIGACHAT_API_CORP",
+        auth_scope: Literal["GIGACHAT_API_PERS", "GIGACHAT_API_CORP", "GIGACHAT_API_B2B"] = "GIGACHAT_API_CORP",
         cert_path: str = '',
     ) -> None:
         """Initialize a new GigaChatModel instance.
@@ -187,9 +211,12 @@ class GigaChatSmolModel(Model):
         try:
             messages = map_message_roles_to_api_format(messages)
             functions = [get_tool_json_schema_gigachat(tool) for tool in tools_to_call_from] if tools_to_call_from else None
-            response = self.gigachat_instance.chat(messages=messages, functions=functions)
+            response = self.chat(messages=messages, functions=functions)
             answer = response.get('answer', '')
             tool_calls = extract_tool_calls(response)
+
+            if tool_calls is None and tools_to_call_from is not None:
+                tool_calls = create_final_answer_tool_call(answer)
             
             if stop_sequences and isinstance(stop_sequences, list):
                 answer = remove_stop_sequences(answer, stop_sequences)
@@ -207,13 +234,15 @@ class GigaChatSmolModel(Model):
                 role="assistant",
                 content=f"Error in model execution: {str(e)}"
             )  
-  
+
     def chat(
         self, 
         messages: Union[list[dict[str, str]], list[tuple[DialogRole, str]]], 
-        params: Optional[dict[str, Any]] = None
+        params: Optional[dict[str, Any]] = None,
+        functions: Optional[list[dict[str, Any]]] = None,
+        function_call: Optional[Union[str, dict[str, str]]] = None,
     ) -> dict[str, Any]:
-        return self.gigachat_instance.chat(messages, params)
+        return self.gigachat_instance.chat(messages, params, functions, function_call)
     
     def get_available_models(self) -> list[str]:
         return self.gigachat_instance._get_list_model()
