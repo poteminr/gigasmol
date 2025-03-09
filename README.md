@@ -67,7 +67,7 @@ code_agent = CodeAgent(
 # Run the code_agent
 code_agent.run("What are the main tourist attractions in Moscow?")
 
-# Create an CodeAgent with the model
+# Create an ToolCallingAgent with the model
 tool_calling_agent = ToolCallingAgent(
     tools=[DuckDuckGoSearchTool()],
     model=model
