@@ -2,7 +2,7 @@
 
 from gigasmol.gigachat_api.api_model import GigaChat
 
-__version__ = "0.0.1"
+__version__ = "0.0.3"
 
 __all__ = ["GigaChat"]
 
@@ -18,8 +18,8 @@ except ImportError:
         """
         def __init__(self, *args, **kwargs):
             raise ImportError(
-                "The smolagents package is required to use GigaChatSmolModel. "
-                "Please install the full package with `pip install gigasmol`."
+                'The smolagents package is required to use GigaChatSmolModel. '
+                'Please install the full package with `pip install "gigasmol[agent]"`.'
             )
     
     __all__.append("GigaChatSmolModel")
