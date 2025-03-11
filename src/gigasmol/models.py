@@ -8,7 +8,7 @@ from smolagents.tools import Tool
 from smolagents.models import Model, MessageRole, parse_tool_args_if_needed, remove_stop_sequences
 from huggingface_hub import ChatCompletionOutputMessage, ChatCompletionOutputToolCall
 
-from .gigachat_api.api_model import DialogRole, GigaChat
+from .gigachat_api.api_model import DialogRole, GigaChat, MessageList
 
 
 TOOL_ROLE_CONVERSIONS = {
@@ -150,6 +150,7 @@ class GigaChatSmolModel(Model):
 
     def __init__(
         self,
+        auth_data: str,
         model_name: str = "GigaChat",
         api_endpoint: str = "https://gigachat.devices.sberbank.ru/api/v1/",
         temperature: float = 0.1,
@@ -158,26 +159,25 @@ class GigaChatSmolModel(Model):
         max_tokens: int = 1500,
         profanity_check: bool = True,
         client_id: Optional[str] = None,
-        client_secret: Optional[str] = None,
         auth_endpoint: str = "https://ngw.devices.sberbank.ru:9443/api/v2/oauth",
         auth_scope: Literal["GIGACHAT_API_PERS", "GIGACHAT_API_CORP", "GIGACHAT_API_B2B"] = "GIGACHAT_API_CORP",
-        cert_path: str = '',
+        cert_path: Optional[str] = None,
     ) -> None:
         """Initialize a new GigaChatModel instance.
         
         Args:
+            auth_data: Authorization key for exchanging messages with GigaChat API
             model_name: The name of the GigaChat model to use.
+            api_endpoint: The GigaChat API endpoint URL.
             temperature: Controls randomness in generation (0.0-1.0).
             top_p: Controls diversity via nucleus sampling (0.0-1.0).
             repetition_penalty: Penalizes repetition in generated text (>= 1.0).
             max_tokens: Maximum number of tokens to generate.
             profanity_check: Whether to enable profanity filtering.
-            api_endpoint: The GigaChat API endpoint URL.
-            cert_path: Path to the certificate file for API authentication.
             client_id: The client ID for API authentication.
-            client_secret: The client secret for API authentication.
             auth_endpoint: The authentication endpoint URL.
             auth_scope: The authentication scope.
+            cert_path: Path to the certificate file for API authentication.
         """
         super().__init__()
         self.model_name = model_name
@@ -187,6 +187,7 @@ class GigaChatSmolModel(Model):
         self.max_tokens = max_tokens
         self.profanity_check = profanity_check
         self.gigachat_instance = GigaChat(
+            auth_data=auth_data,
             model_name=self.model_name,
             api_endpoint=api_endpoint,
             temperature=self.temperature,
@@ -195,7 +196,6 @@ class GigaChatSmolModel(Model):
             max_tokens=self.max_tokens,
             profanity_check=self.profanity_check,
             client_id=client_id,
-            client_secret=client_secret,
             auth_endpoint=auth_endpoint,
             auth_scope=auth_scope,
             cert_path=cert_path
@@ -237,12 +237,12 @@ class GigaChatSmolModel(Model):
 
     def chat(
         self, 
-        messages: Union[list[dict[str, str]], list[tuple[DialogRole, str]]], 
-        params: Optional[dict[str, Any]] = None,
-        functions: Optional[list[dict[str, Any]]] = None,
-        function_call: Optional[Union[str, dict[str, str]]] = None,
-    ) -> dict[str, Any]:
+        messages: MessageList, 
+        params: Optional[Dict[str, Any]] = None,
+        functions: Optional[List[Dict[str, Any]]] = None,
+        function_call: Optional[Union[str, Dict[str, str]]] = None,
+    ) -> Dict[str, Any]:
         return self.gigachat_instance.chat(messages, params, functions, function_call)
     
-    def get_available_models(self) -> list[str]:
+    def get_available_models(self) -> List[str]:
         return self.gigachat_instance._get_list_model()

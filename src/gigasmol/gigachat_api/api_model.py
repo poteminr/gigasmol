@@ -1,13 +1,19 @@
-from datetime import datetime
-from enum import StrEnum
-from typing import Any, Iterator, Optional, Union, Literal
-
 import json
 import logging
+from datetime import datetime
+from typing import Any, Iterator, Optional, Union, Literal, Dict, List, Tuple
+
 import requests
 from sseclient import SSEClient
 
 from .auth import APIAuthorize, LLMAuthorizeEnablers
+
+try:
+    from enum import StrEnum
+except ImportError:
+    from enum import Enum
+    class StrEnum(str, Enum):
+        pass
 
 
 class DialogRole(StrEnum):
@@ -17,12 +23,16 @@ class DialogRole(StrEnum):
     ASSISTANT = "assistant"
     FUNCTION = "function"
          
+
+MessageList = Union[List[Tuple[DialogRole, str]], List[Dict[str, str]]]
+
          
 class GigaChat:
     """Access to LLM based on GigaChat API."""
 
     def __init__(
         self,
+        auth_data: str,
         model_name: str = 'GigaChat',
         api_endpoint: str = "https://gigachat.devices.sberbank.ru/api/v1/",
         authorize: Optional[APIAuthorize] = None,
@@ -33,27 +43,29 @@ class GigaChat:
         n: int = 1,
         n_stream: int = 1,
         profanity_check: bool = True,
-        authorize_method: Optional[APIAuthorize] = LLMAuthorizeEnablers,
         client_id: Optional[str] = None,
-        client_secret: Optional[str] = None,
         auth_endpoint: Optional[str] = "https://ngw.devices.sberbank.ru:9443/api/v2/oauth",
         auth_scope: Literal["GIGACHAT_API_PERS", "GIGACHAT_API_CORP", "GIGACHAT_API_B2B"] = "GIGACHAT_API_CORP",
-        cert_path: Optional[str] = '',
+        cert_path: Optional[str] = None,
     ) -> None:
         """Initialize with GigaChat API access parameters and response generation settings.
 
         Args:
-            api_endpoint: GigaChat API URL, e.g., https://beta.saluteai.sberdevices.ru/v1/
-            authorize: Authorization method for GigaChat API.
+            auth_data: Authorization key for exchanging messages with GigaChat API
+            model_name: Model name of the GigaChat to use.
+            api_endpoint: GigaChat API URL
+            authorize: Authorization method for GigaChat API. If not provided, LLMAuthorizeEnablers will be used.
             temperature: Temperature parameter; higher values produce more diverse outputs (typical value 0.7).
             top_p: Another parameter for output diversity (typical value 0.1).
             repetition_penalty: Controls word repetition. Value 1.0 is neutral, 0-1 increases repetition, >1 decreases repetition.
-            model_name: Model name. If multiple models are available on the inference server, a specific one can be selected.
             max_tokens: Maximum number of tokens to generate in the response.
             n: Number of completions to generate (non-streaming mode).
             n_stream: Number of completions to generate (streaming mode).
             profanity_check: Whether to enable profanity checking.
-            authorize_method: Authorization method for GigaChat API.
+            client_id: GigaChat API client ID (used as RqUID).
+            auth_endpoint: The authentication endpoint URL.
+            auth_scope: The authentication scope. Contains information about the API version being accessed. 
+            cert_path: Path to the certificate for GigaChat API access.
         """
         self.api_endpoint = api_endpoint
         self.temperature = temperature
@@ -65,19 +77,20 @@ class GigaChat:
         self.n_stream = n_stream
         self.profanity_check = profanity_check
 
-        if authorize is None and authorize_method is not None:
-            self.__authorize = authorize_method(
+        if authorize is not None:
+            self.__authorize = authorize
+        else:
+            self.__authorize = LLMAuthorizeEnablers(
+                auth_data=auth_data,
                 client_id=client_id,
-                client_secret=client_secret,
                 auth_endpoint=auth_endpoint,
                 auth_scope=auth_scope,
                 cert_path=cert_path
             )
-        else:
-            self.__authorize = authorize
+            
         self.__token_expiration_time = datetime.min
 
-    def _get_list_model(self) -> list[str]:
+    def _get_list_model(self) -> List[str]:
         """Get a list of available models.
 
         The model list is useful when multiple models are available on the inference endpoint
@@ -107,12 +120,12 @@ class GigaChat:
 
     def _prepare_request(
         self,
-        params: dict[str, Any],
-        messages: list[dict[str, Any]],
+        params: Dict[str, Any],
+        messages: List[Dict[str, Any]],
         stream: bool,
-        functions: Optional[list[dict[str, Any]]] = None,
-        function_call: Optional[Union[str, dict[str, str]]] = None,
-    ) -> tuple[str, dict[str, Any], str, str]:
+        functions: Optional[List[Dict[str, Any]]] = None,
+        function_call: Optional[Union[str, Dict[str, str]]] = None,
+    ) -> Tuple[str, Dict[str, Any], str, str]:
         """Prepare and return all necessary parameters for a Gigachat API request.
 
         Args:
@@ -173,10 +186,10 @@ class GigaChat:
         self,
         prompt: str,
         system_prompt: Optional[str] = None,
-        params: Optional[dict[str, Any]] = None,
-        functions: Optional[list[dict[str, Any]]] = None,
-        function_call: Optional[Union[str, dict[str, str]]] = None,
-    ) -> dict[str, Any]:
+        params: Optional[Dict[str, Any]] = None,
+        functions: Optional[List[Dict[str, Any]]] = None,
+        function_call: Optional[Union[str, Dict[str, str]]] = None,
+    ) -> Dict[str, Any]:
         """Send a prompt to the model and return the model's response.
 
         Args:
@@ -199,9 +212,9 @@ class GigaChat:
         self,
         prompt: str,
         system_prompt: Optional[str] = None,
-        params: Optional[dict[str, Any]] = None,
-        functions: Optional[list[dict[str, Any]]] = None,
-        function_call: Optional[Union[str, dict[str, str]]] = None,
+        params: Optional[Dict[str, Any]] = None,
+        functions: Optional[List[Dict[str, Any]]] = None,
+        function_call: Optional[Union[str, Dict[str, str]]] = None,
     ) -> Iterator[str]:
         """Send a prompt to the model and return the model's response as a stream.
 
@@ -221,7 +234,7 @@ class GigaChat:
         messages.append({"role": "user", "content": prompt})
         return self.chat_stream(messages=messages, params=params, functions=functions, function_call=function_call)
 
-    def tokens(self, text: str, params: dict[str, Any]) -> int:
+    def tokens(self, text: str, params: Dict[str, Any]) -> int:
         """Count the number of tokens in the given text string.
 
         Args:
@@ -254,11 +267,11 @@ class GigaChat:
 
     def chat(
         self,
-        messages: Union[list[tuple[str, str]], list[dict[str, str]]],
-        params: Optional[dict[str, Any]] = None,
-        functions: Optional[list[dict[str, Any]]] = None,
-        function_call: Optional[Union[str, dict[str, str]]] = None,
-    ) -> dict[str, Any]:
+        messages: MessageList,
+        params: Optional[Dict[str, Any]] = None,
+        functions: Optional[List[Dict[str, Any]]] = None,
+        function_call: Optional[Union[str, Dict[str, str]]] = None,
+    ) -> Dict[str, Any]:
         """Send a list of messages to the model and return the model's response.
 
         Args:
@@ -269,7 +282,7 @@ class GigaChat:
             function_call: Optional function call specification.
 
         Returns:
-            dict: A dictionary containing the LLM response and metadata.
+            Dict: A dictionary containing the LLM response and metadata.
 
         Raises:
             RuntimeError: If the API response is invalid or an error occurs.
@@ -314,10 +327,10 @@ class GigaChat:
 
     def chat_stream(
         self,
-        messages: Union[list[tuple[str, str]], list[dict[str, str]]],
-        params: Optional[dict[str, Any]] = None,
-        functions: Optional[list[dict[str, Any]]] = None,
-        function_call: Optional[Union[str, dict[str, str]]] = None,
+        messages: MessageList,
+        params: Optional[Dict[str, Any]] = None,
+        functions: Optional[List[Dict[str, Any]]] = None,
+        function_call: Optional[Union[str, Dict[str, str]]] = None,
     ) -> Iterator[str]:
         """Send a list of messages to the model and return the model's response as a stream.
 
@@ -367,7 +380,7 @@ class GigaChat:
             raise e
         
     @staticmethod
-    def validate_message_roles(messages: Union[list[tuple[str, str]], list[dict[str, str]]]) -> list[dict[str, str]]:
+    def validate_message_roles(messages: MessageList) -> List[Dict[str, str]]:
         """Validate message roles and convert to the required format.
 
         Args:
@@ -375,13 +388,13 @@ class GigaChat:
                     a list of dictionaries with 'role' and 'content' keys.
 
         Returns:
-            list[dict[str, str]]: A list of properly formatted message dictionaries.
+            List[Dict[str, str]]: A list of properly formatted message dictionaries.
 
         Raises:
             RuntimeError: If an unknown role is encountered.
         """
         chat_messages = []
-        allowed_roles: set[str] = {role for role in DialogRole}
+        allowed_roles = {role for role in DialogRole}
         if isinstance(messages[0], tuple):
             for role, message in messages:
                 if role in allowed_roles:
@@ -396,7 +409,7 @@ class GigaChat:
                     raise RuntimeError(f"Passed unknown role: '{message['role']}' in message: '{message['content']}'. Available roles: '{str(list(allowed_roles))}'")
         return chat_messages
     
-    def check_chat_profanity(self, messages: Union[list[tuple[DialogRole, str]], list[dict[str, str]]]) -> bool:
+    def check_chat_profanity(self, messages: MessageList) -> bool:
         """Check if the given message history contains prohibited content.
 
         Args:
@@ -427,7 +440,8 @@ class GigaChat:
         except Exception as err:
             logging.error(f"Error in checking censorship for question: '{question}', error: '{err}'")
             raise err
-         
+
+
 class GigaFilter:
     """Class for direct interaction with GigaFilter for profanity checking."""
 
@@ -441,7 +455,7 @@ class GigaFilter:
         self.api_endpoint = api_endpoint
         self.__authorize = authorize
         
-    def check_profanity(self, question: str, return_json: bool = False) -> Union[bool, dict[str, Any]]:
+    def check_profanity(self, question: str, return_json: bool = False) -> Union[bool, Dict[str, Any]]:
         """Check if the given text contains profanity.
 
         Args:

@@ -33,12 +33,14 @@ GigaChat API + smolagents = gigasmol 💀
 - **Easy to Understand**: Read and comprehend the entire codebase in minutes
 - **Maintainable**: Small, focused codebase means fewer bugs and easier updates
 ## Installation
-### API-Only Installation (Default)
+### API-Only Installation (default)
+`python>=3.8`
 ```bash
 pip install gigasmol
 ```
 
 ### Full Installation with Agent Support
+`python>=3.10`
 ```bash
 pip install "gigasmol[agent]"
 ```
@@ -53,9 +55,8 @@ from smolagents import CodeAgent, ToolCallingAgent, DuckDuckGoSearchTool
 
 # Initialize the GigaChat model with your credentials
 model = GigaChatSmolModel(
-    model_name="GigaChat-Max",  
-    client_id="YOUR_CLIENT_ID",
-    client_secret="YOUR_CLIENT_SECRET",
+    auth_data="YOUR_AUTH_TOKEN",
+    model_name="GigaChat-Max"
 )
 
 # Create an CodeAgent with the model
@@ -86,9 +87,8 @@ from gigasmol import GigaChat
 
 # Direct access to GigaChat API
 gigachat = GigaChat(
+    auth_data="YOUR_AUTH_TOKEN",
     model_name="GigaChat-Max",
-    client_id="YOUR_CLIENT_ID",
-    client_secret="YOUR_CLIENT_SECRET",
 )
 
 # Generate a response
@@ -126,7 +126,7 @@ GigaSmol provides two layers of functionality:
 ## Examples
 
 Check the `examples` directory:
-- `structured_output.ipynb`: Using GigaChat for structured output
+- `structured_output.ipynb`: Using GigaChat API and function_calling for structured output
 - `agents.ipynb`: Building code and tool agents with GigaChat and smolagents
 
 ## Acknowledgements
