@@ -33,12 +33,14 @@ GigaChat API + smolagents = gigasmol 💀
 - **Easy to Understand**: Read and comprehend the entire codebase in minutes
 - **Maintainable**: Small, focused codebase means fewer bugs and easier updates
 ## Installation
-### API-Only Installation (Default)
+### API-Only Installation (default)
+`python>=3.8`
 ```bash
 pip install gigasmol
 ```
 
 ### Full Installation with Agent Support
+`python>=3.10`
 ```bash
 pip install "gigasmol[agent]"
 ```

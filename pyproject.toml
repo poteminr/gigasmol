@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gigasmol"
-version = "0.0.3"
+version = "0.0.4"
 authors = [
     {name = "poteminr", email = "poteminr@gmail.com"},
 ]
 description = "A lightweight wrapper for gigachat api model for seamless use with hf smolagents"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.8"
 license = {text = "LICENSE"}
 # Base dependencies - ONLY the API parts
 dependencies = [
@@ -18,7 +18,6 @@ dependencies = [
     "sseclient>=0.0.27",
     "urllib3>=2.0.0",
 ]
-
 
 [project.urls]
 "Homepage" = "https://github.com/poteminr/gigasmol"
@@ -28,8 +27,9 @@ dependencies = [
 package-dir = {"" = "src"}
 
 [project.optional-dependencies]
-# Agent functionality adds smolagents
+# Agent functionality requires Python 3.10+
 agent = [
-    "smolagents>=1.10.0",
-    "huggingface-hub>=0.19.0",
+    "smolagents>=1.10.0; python_version >= '3.10'",
+    "huggingface-hub>=0.19.0; python_version >= '3.10'",
+    "gigasmol-agent-requires-python-3.10-or-newer==0.0.0; python_version < '3.10'",
 ]
