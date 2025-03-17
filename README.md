@@ -47,7 +47,28 @@ pip install "gigasmol[agent]"
 
 
 ## Quick Start
-### Basic Usage with smolagents
+### Raw GigaChat API
+`gigasmol`
+
+
+```python
+import json
+from gigasmol import GigaChat
+
+# Direct access to GigaChat API
+gigachat = GigaChat(
+    auth_data="YOUR_AUTH_TOKEN",
+    model_name="GigaChat-Max",
+)
+
+# Generate a response
+response = gigachat.chat([
+    {"role": "user", "content": "What is the capital of Russia?"}
+])
+print(response['answer']) # or print(response['response']['choices'][0]['message']['content'])
+```
+### Usage with smolagents
+`gigasmol[agent]`
 
 ```python
 from gigasmol import GigaChatSmolModel
@@ -79,24 +100,6 @@ tool_calling_agent.run("What are the main tourist attractions in Moscow?")
 ```
 
 
-### Using Raw GigaChat API
-
-```python
-import json
-from gigasmol import GigaChat
-
-# Direct access to GigaChat API
-gigachat = GigaChat(
-    auth_data="YOUR_AUTH_TOKEN",
-    model_name="GigaChat-Max",
-)
-
-# Generate a response
-response = gigachat.chat([
-    {"role": "user", "content": "What is the capital of Russia?"}
-])
-print(response['answer']) # or print(response['response']['choices'][0]['message']['content'])
-```
 
 ## How It Works
 
