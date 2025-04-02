@@ -5,7 +5,7 @@ from copy import deepcopy
 from typing import List, Dict, Optional, Any, Tuple, Union, Literal
 
 from smolagents.tools import Tool
-from smolagents.models import Model, MessageRole, parse_tool_args_if_needed, remove_stop_sequences
+from smolagents.models import Model, MessageRole, ChatMessage
 from huggingface_hub import ChatCompletionOutputMessage, ChatCompletionOutputToolCall
 
 from .gigachat_api.api_model import DialogRole, GigaChat, MessageList
@@ -18,6 +18,65 @@ TOOL_ROLE_CONVERSIONS = {
     MessageRole.USER: DialogRole.USER,
     MessageRole.SYSTEM: DialogRole.SYSTEM,
 }
+
+
+def remove_stop_sequences(content: str, stop_sequences: List[str]) -> str:
+    """Remove stop sequences from the end of content string.
+    
+    This function checks if the content ends with any of the provided stop sequences
+    and removes them if found.
+    
+    Args:
+        content: The string content to process.
+        stop_sequences: A list of stop sequences to check for and remove.
+        
+    Returns:
+        str: The content with any matching stop sequences removed from the end.
+    """
+    for stop_seq in stop_sequences:
+        if content[-len(stop_seq) :] == stop_seq:
+            content = content[: -len(stop_seq)]
+    return content
+
+
+def parse_json_if_needed(arguments: Union[str, dict]) -> Union[str, dict]:
+    """Parse JSON string to dictionary if needed.
+    
+    This function checks if the input is already a dictionary. If not, it attempts
+    to parse it as JSON. If parsing fails, it returns the original string.
+    
+    Args:
+        arguments: Either a string potentially containing JSON or a dictionary.
+        
+    Returns:
+        Union[str, dict]: The parsed dictionary if successful, or the original input.
+    """
+    if isinstance(arguments, dict):
+        return arguments
+    else:
+        try:
+            return json.loads(arguments)
+        except Exception:
+            return arguments
+        
+        
+def parse_tool_args_if_needed(message: ChatMessage) -> ChatMessage:
+    """Parse tool call arguments from JSON strings to dictionaries if needed.
+    
+    This function processes a ChatMessage object, checking if it contains tool calls.
+    For each tool call, it attempts to parse the function arguments from JSON string
+    to dictionary format if they're not already dictionaries.
+    
+    Args:
+        message: A ChatMessage object that may contain tool calls.
+        
+    Returns:
+        ChatMessage: The same message object with tool call arguments parsed if needed.
+    """
+    if message.tool_calls is not None:
+        for tool_call in message.tool_calls:
+            tool_call.function.arguments = parse_json_if_needed(tool_call.function.arguments)
+    return message
 
 
 def get_tool_json_schema_gigachat(tool: Tool) -> Dict:
