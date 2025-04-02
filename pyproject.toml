@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gigasmol"
-version = "0.0.4"
+version = "0.0.5"
 authors = [
     {name = "poteminr", email = "poteminr@gmail.com"},
 ]
@@ -29,7 +29,7 @@ package-dir = {"" = "src"}
 [project.optional-dependencies]
 # Agent functionality requires Python 3.10+
 agent = [
-    "smolagents>=1.10.0; python_version >= '3.10'",
+    "smolagents==1.12.0; python_version >= '3.10'",
     "huggingface-hub>=0.19.0; python_version >= '3.10'",
     "gigasmol-agent-requires-python-3.10-or-newer==0.0.0; python_version < '3.10'",
 ]
