@@ -6,7 +6,7 @@ from typing import Any, Iterator, Optional, Union, Literal, Dict, List, Tuple
 import requests
 from sseclient import SSEClient
 
-from .auth import APIAuthorize, LLMAuthorizeEnablers
+from .auth import APIAuthorize, LLMAuthorizeEnablers, SberDSAuthorize
 
 try:
     from enum import StrEnum
@@ -32,9 +32,10 @@ class GigaChat:
 
     def __init__(
         self,
-        auth_data: str,
+        auth_data: Optional[str] = None,
         model_name: str = 'GigaChat',
         api_endpoint: str = "https://gigachat.devices.sberbank.ru/api/v1/",
+        sber_ds: bool = False,
         authorize: Optional[APIAuthorize] = None,
         temperature: float = 0.1,
         top_p: float = 0.1,
@@ -54,6 +55,7 @@ class GigaChat:
             auth_data: Authorization key for exchanging messages with GigaChat API
             model_name: Model name of the GigaChat to use.
             api_endpoint: GigaChat API URL
+            sber_ds: Using on sber-ds platform
             authorize: Authorization method for GigaChat API. If not provided, LLMAuthorizeEnablers will be used.
             temperature: Temperature parameter; higher values produce more diverse outputs (typical value 0.7).
             top_p: Another parameter for output diversity (typical value 0.1).
@@ -68,6 +70,7 @@ class GigaChat:
             cert_path: Path to the certificate for GigaChat API access.
         """
         self.api_endpoint = api_endpoint
+        self.sber_ds = sber_ds
         self.temperature = temperature
         self.top_p = top_p
         self.repetition_penalty = repetition_penalty
@@ -77,9 +80,11 @@ class GigaChat:
         self.n_stream = n_stream
         self.profanity_check = profanity_check
 
+        assert auth_data is not None or sber_ds is True, "auth_data is required for non-sber_ds mode"
+        
         if authorize is not None:
             self.__authorize = authorize
-        else:
+        elif not sber_ds:
             self.__authorize = LLMAuthorizeEnablers(
                 auth_data=auth_data,
                 client_id=client_id,
@@ -87,7 +92,8 @@ class GigaChat:
                 auth_scope=auth_scope,
                 cert_path=cert_path
             )
-            
+        else:
+            self.__authorize = SberDSAuthorize()
         self.__token_expiration_time = datetime.min
 
     def _get_list_model(self) -> List[str]:
@@ -104,7 +110,13 @@ class GigaChat:
         """
         try:
             url = f"{self.api_endpoint}models"
-            headers = {"Authorization": f"Bearer {self.__authorize.token}"}
+            headers = {}
+            
+            if not self.sber_ds:
+                headers["Authorization"] = f"Bearer {self.__authorize.token}"
+            else:
+                headers["Accept"] = "application/json"
+            
             response = requests.get(url, headers=headers, verify=self.__authorize.cert_path)
             if response.status_code == 200:
                 models = json.loads(response.content)
@@ -147,10 +159,13 @@ class GigaChat:
         n = self.n_stream if stream else self.n
 
         url = f"{self.api_endpoint}chat/completions"
-        headers = {
-            "Authorization": f"Bearer {self.__authorize.token}",
-            "Content-Type": "application/json",
-        }
+        headers = { "Content-Type": "application/json"}
+        
+        if not self.sber_ds:
+            headers["Authorization"] = f"Bearer {self.__authorize.token}"
+        else:
+            headers["Accept"] = "application/json"
+
         params = {
             "model": f"{model_name}",
             "messages": messages,
@@ -249,7 +264,13 @@ class GigaChat:
         """
         try:
             model_name = params.get("model_name", self.model_name)
-            headers = {"Authorization": f"Bearer {self.__authorize.token}", "Content-Type": "application/json"}
+            headers = {"Content-Type": "application/json"}
+            
+            if not self.sber_ds:
+                headers["Authorization"] = f"Bearer {self.__authorize.token}"
+            else:
+                headers["Accept"] = "application/json"
+            
             query = json.dumps({"model": f"{model_name}", "input": [text]})
             url = f"{self.api_endpoint}tokens/count"
             logging.debug(f"Count tokens on LLM '{model_name}' and prompt: {text}...")

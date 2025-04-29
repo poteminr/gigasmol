@@ -251,3 +251,13 @@ class LLMAuthorizeEnablers(APIAuthorize):
         except Exception as e:
             logger.error(f"Unexpected error during token retrieval: {str(e)}")
             raise
+        
+
+class SberDSAuthorize(APIAuthorize):
+    @property
+    def cert_path(self) -> bool:
+        return False
+    
+    @property
+    def token(self) -> str:
+        return ""
