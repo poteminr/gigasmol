@@ -80,7 +80,7 @@ model = GigaChatSmolModel(
     model_name="GigaChat-Max"
 )
 
-# Create an CodeAgent with the model
+# Create a CodeAgent with the model
 code_agent = CodeAgent(
     tools=[DuckDuckGoSearchTool()],
     model=model
@@ -89,7 +89,7 @@ code_agent = CodeAgent(
 # Run the code_agent
 code_agent.run("What are the main tourist attractions in Moscow?")
 
-# Create an ToolCallingAgent with the model
+# Create a ToolCallingAgent with the model
 tool_calling_agent = ToolCallingAgent(
     tools=[DuckDuckGoSearchTool()],
     model=model
