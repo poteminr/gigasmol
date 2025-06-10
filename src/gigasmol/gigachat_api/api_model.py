@@ -24,7 +24,7 @@ class DialogRole(StrEnum):
     FUNCTION = "function"
          
 
-MessageList = Union[List[Tuple[DialogRole, str]], List[Dict[str, str]]]
+MessageList = List[Dict[str, Any]]
 
          
 class GigaChat:
@@ -133,7 +133,7 @@ class GigaChat:
     def _prepare_request(
         self,
         params: Dict[str, Any],
-        messages: List[Dict[str, Any]],
+        messages: MessageList,
         stream: bool,
         functions: Optional[List[Dict[str, Any]]] = None,
         function_call: Optional[Union[str, Dict[str, str]]] = None,
@@ -159,7 +159,7 @@ class GigaChat:
         n = self.n_stream if stream else self.n
 
         url = f"{self.api_endpoint}chat/completions"
-        headers = { "Content-Type": "application/json"}
+        headers = {"Content-Type": "application/json"}
         
         if not self.sber_ds:
             headers["Authorization"] = f"Bearer {self.__authorize.token}"
@@ -186,7 +186,7 @@ class GigaChat:
 
         if stream:
             params["update_interval"] = 0
-        query = json.dumps(params)
+        query = json.dumps(params, ensure_ascii=False)
         return url, headers, query, model_name
     
     def get_model_name(self) -> str:
@@ -309,16 +309,15 @@ class GigaChat:
             RuntimeError: If the API response is invalid or an error occurs.
         """
         try:
-            chat_messages = self.validate_message_roles(messages)
             params = params if params is not None else {}
             url, headers, query, model_name = self._prepare_request(
                 params=params,
-                messages=chat_messages,
+                messages=messages,
                 stream=False,
                 functions=functions,
                 function_call=function_call,
             )
-            logging.debug(f"Run chat on LLM '{model_name}' and chat: {chat_messages}...")
+            logging.debug(f"Run chat on LLM '{model_name}' and chat: {messages}...")
             response = requests.post(url, data=query, headers=headers, verify=self.__authorize.cert_path)
             if response.status_code == 200:
                 answer = json.loads(response.content)
@@ -369,16 +368,15 @@ class GigaChat:
             RuntimeError: If the API response is invalid or an error occurs.
         """
         try:
-            chat_messages = self.validate_message_roles(messages)
             params = params if params is not None else {}
             url, headers, query, model_name = self._prepare_request(
                 params=params,
-                messages=chat_messages,
+                messages=messages,
                 stream=True,
                 functions=functions,
                 function_call=function_call,
             )
-            logging.debug(f"Run chat on LLM '{model_name}' and chat: {chat_messages}...")
+            logging.debug(f"Run chat on LLM '{model_name}' and chat: {messages}...")
             response = requests.post(url, data=query, headers=headers, verify=self.__authorize.cert_path, stream=True)
             if response.status_code == 200:
                 finish_reason = str()
@@ -400,36 +398,6 @@ class GigaChat:
             logging.error(f"{str(e)}")
             raise e
         
-    @staticmethod
-    def validate_message_roles(messages: MessageList) -> List[Dict[str, str]]:
-        """Validate message roles and convert to the required format.
-
-        Args:
-            messages: Messages either as a list of (role, message) tuples or 
-                    a list of dictionaries with 'role' and 'content' keys.
-
-        Returns:
-            List[Dict[str, str]]: A list of properly formatted message dictionaries.
-
-        Raises:
-            RuntimeError: If an unknown role is encountered.
-        """
-        chat_messages = []
-        allowed_roles = {role for role in DialogRole}
-        if isinstance(messages[0], tuple):
-            for role, message in messages:
-                if role in allowed_roles:
-                    chat_messages.append({"role": role, "content": message})
-                else:
-                    raise RuntimeError(f"Passed unknown role: '{role}' in message: '{message}'. Available roles: '{str(list(allowed_roles))}'")
-        else:
-            for message in messages:
-                if message['role'] in allowed_roles:
-                    chat_messages.append({"role": message['role'], "content": message['content']})
-                else:
-                    raise RuntimeError(f"Passed unknown role: '{message['role']}' in message: '{message['content']}'. Available roles: '{str(list(allowed_roles))}'")
-        return chat_messages
-    
     def check_chat_profanity(self, messages: MessageList) -> bool:
         """Check if the given message history contains prohibited content.
 

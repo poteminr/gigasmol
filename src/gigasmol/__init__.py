@@ -2,7 +2,7 @@
 
 from gigasmol.gigachat_api.api_model import GigaChat
 
-__version__ = "0.0.6"
+__version__ = "0.0.7"
 
 __all__ = ["GigaChat"]
 
