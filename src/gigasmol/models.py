@@ -6,7 +6,8 @@ from typing import List, Dict, Optional, Any, Tuple, Union, Literal
 
 from smolagents.tools import Tool
 from smolagents.models import Model, MessageRole, ChatMessage
-from huggingface_hub import ChatCompletionOutputMessage, ChatCompletionOutputToolCall
+from smolagents.monitoring import TokenUsage
+from huggingface_hub import ChatCompletionOutputToolCall
 
 from .gigachat_api.api_model import DialogRole, GigaChat, MessageList
 
@@ -110,7 +111,7 @@ def get_tool_json_schema_gigachat(tool: Tool) -> Dict:
     }
 
 
-def map_message_roles_to_api_format(messages: List[Dict[str, str]]) -> List[Tuple[DialogRole, str]]:
+def map_message_roles_to_api_format(messages: List[Dict[str, Any]]) -> List[Dict[DialogRole, str]]:
     """Convert smolagents message format to GigaChat API format.
     
     This function transforms messages from the smolagents format to the format
@@ -122,14 +123,14 @@ def map_message_roles_to_api_format(messages: List[Dict[str, str]]) -> List[Tupl
                  'role' and 'content' keys.
                  
     Returns:
-        List[Tuple[DialogRole, str]]: A list of tuples containing the converted DialogRole
+        List[Dict[DialogRole, str]]: A list of tuples containing the converted DialogRole
                                       and the message text content.
     """
     converted_messages = []
     for message in messages:
         message_role = TOOL_ROLE_CONVERSIONS[message['role']]
         message_content = message['content'][0]['text']
-        converted_messages.append((message_role, message_content))                  
+        converted_messages.append({"role": message_role, "content": message_content})                  
     return converted_messages
 
 
@@ -260,13 +261,13 @@ class GigaChatSmolModel(Model):
             cert_path=cert_path
         )
 
-    def __call__(
+    def generate(
         self,
-        messages: List[Dict[str, str]],
+        messages: List[Dict[str, Any]],
         stop_sequences: Optional[List[str]] = None,
         grammar: Optional[str] = None,
         tools_to_call_from: Optional[List[Tool]] = None,
-    ) -> ChatCompletionOutputMessage:
+    ) -> ChatMessage:
         try:
             messages = map_message_roles_to_api_format(messages)
             functions = [get_tool_json_schema_gigachat(tool) for tool in tools_to_call_from] if tools_to_call_from else None
@@ -281,15 +282,20 @@ class GigaChatSmolModel(Model):
                 answer = remove_stop_sequences(answer, stop_sequences)
                 
             return parse_tool_args_if_needed(
-                ChatCompletionOutputMessage(
+                ChatMessage(
                     role="assistant",
                     content=answer,
-                    tool_calls=tool_calls
+                    tool_calls=tool_calls,
+                    raw=response['response'],
+                    token_usage=TokenUsage(
+                        input_tokens=response['response']['usage']['prompt_tokens'],
+                        output_tokens=response['response']['usage']['completion_tokens']
+                    )
                 )
             )
         except Exception as e:
             logging.error(f"Critical error in __call__: {str(e)}", exc_info=True)
-            return ChatCompletionOutputMessage(
+            return ChatMessage(
                 role="assistant",
                 content=f"Error in model execution: {str(e)}"
             )  
