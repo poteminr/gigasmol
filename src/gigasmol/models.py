@@ -128,8 +128,8 @@ def map_message_roles_to_api_format(messages: List[Dict[str, Any]]) -> List[Dict
     """
     converted_messages = []
     for message in messages:
-        message_role = TOOL_ROLE_CONVERSIONS[message['role']]
-        message_content = message['content'][0]['text']
+        message_role = TOOL_ROLE_CONVERSIONS[message.role]
+        message_content = message.content[0]['text']
         converted_messages.append({"role": message_role, "content": message_content})                  
     return converted_messages
 
